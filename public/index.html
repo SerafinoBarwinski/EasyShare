@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="theme-color" content="#4ac926">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="color-scheme" content="light dark">
+
+    <title>EasyShare</title>
+    <meta name="title" content="EasyShare" />
+    <meta name="description" content="Finally Share your files more easyly with the World!" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#4caf50" />
+    <meta name="application-name" content="EasyShare App">
+    <meta name="apple-mobile-web-app-title" content="EasyShare App">
+    <meta name="author" content="Serafino Barwinski">
+    <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+    <noscript>
+        <style>
+            body {
+                opacity: 1 !important;
+            }
+        </style>
+        <div>Bitte aktivieren Sie JavaScript, um diese Seite nutzen zu
+            können.</div>
+    </noscript>
+    <header>
+        <h1>EasyShare</h1>
+    </header>
+    <main>
+        <div class="container" id="login_container">
+            <form id="login_form">
+                <label for="login_input_uname">Username</label>
+                <input id="login_input_uname" type="text" name="uname">
+                <label for="login_input_psw">Password</label>
+                <input id="login_input_psw" type="password" name="psw">
+                <label for="login_button_submit">Login</label>
+                <input id="login_button_submit" type="submit">
+            </form>
+        </div>
+        <div id="content"></div>
+    </main>
+    <footer>
+
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>
