@@ -135,4 +135,6 @@ vite.config.ts.timestamp-*
 
 
 #FontAwesome
-public/fontawesome
+*.env
+uploads/*
+storage.db

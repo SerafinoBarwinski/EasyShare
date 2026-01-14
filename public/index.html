@@ -1,56 +1,547 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="de">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="theme-color" content="#4ac926">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="color-scheme" content="light dark">
-
-    <title>EasyShare</title>
-    <meta name="title" content="EasyShare" />
-    <meta name="description" content="Finally Share your files more easyly with the World!" />
-    <link rel="manifest" href="/manifest.webmanifest" />
-    <meta name="theme-color" content="#4caf50" />
-    <meta name="application-name" content="EasyShare App">
-    <meta name="apple-mobile-web-app-title" content="EasyShare App">
-    <meta name="author" content="Serafino Barwinski">
-    <link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cloud Storage</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    
+    .auth-box {
+      background: white;
+      border-radius: 12px;
+      padding: 40px;
+      max-width: 400px;
+      margin: 100px auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .auth-box h2 { margin-bottom: 30px; color: #333; text-align: center; }
+    .auth-box input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    .auth-box button {
+      width: 100%;
+      padding: 12px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: 0.3s;
+    }
+    .auth-box button:hover { background: #5568d3; }
+    .auth-toggle {
+      text-align: center;
+      margin-top: 20px;
+      color: #666;
+      cursor: pointer;
+    }
+    .auth-toggle:hover { color: #667eea; }
+    
+    .storage-app {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      min-height: 80vh;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #eee;
+    }
+    .header h1 { color: #333; font-size: 28px; }
+    .user-info { display: flex; gap: 15px; align-items: center; }
+    .storage-info {
+      background: #f8f9fa;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      color: #666;
+    }
+    .btn-logout {
+      padding: 10px 20px;
+      background: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    
+    .upload-area {
+      background: #f8f9fa;
+      border: 2px dashed #ddd;
+      border-radius: 12px;
+      padding: 40px;
+      text-align: center;
+      margin-bottom: 30px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .upload-area:hover { border-color: #667eea; background: #f0f2ff; }
+    .upload-area.dragover { border-color: #667eea; background: #e6e9ff; }
+    
+    .files-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+    }
+    
+    .file-card {
+      background: white;
+      border: 2px solid #eee;
+      border-radius: 12px;
+      padding: 20px;
+      transition: 0.3s;
+      position: relative;
+    }
+    .file-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    .file-icon {
+      font-size: 48px;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .file-name {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 5px;
+      word-break: break-word;
+      font-size: 14px;
+    }
+    .file-size {
+      color: #999;
+      font-size: 12px;
+    }
+    .file-actions {
+      display: flex;
+      gap: 5px;
+      margin-top: 15px;
+    }
+    .btn {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      transition: 0.2s;
+    }
+    .btn-download { background: #667eea; color: white; }
+    .btn-download:hover { background: #5568d3; }
+    .btn-share { background: #3498db; color: white; }
+    .btn-share:hover { background: #2980b9; }
+    .btn-delete { background: #e74c3c; color: white; }
+    .btn-delete:hover { background: #c0392b; }
+    
+    .share-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #2ecc71;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+    
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal.active { display: flex; }
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      max-width: 500px;
+      width: 90%;
+    }
+    .modal-content h3 { margin-bottom: 20px; color: #333; }
+    .share-link {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      word-break: break-all;
+      margin: 15px 0;
+      font-family: monospace;
+    }
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .btn-copy {
+      flex: 1;
+      padding: 12px;
+      background: #2ecc71;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn-close {
+      flex: 1;
+      padding: 12px;
+      background: #95a5a6;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    
+    .hidden { display: none; }
+    .error { color: #e74c3c; text-align: center; margin-top: 10px; }
+  </style>
 </head>
-
 <body>
-    <noscript>
-        <style>
-            body {
-                opacity: 1 !important;
-            }
-        </style>
-        <div>Bitte aktivieren Sie JavaScript, um diese Seite nutzen zu
-            können.</div>
-    </noscript>
-    <header>
-        <h1>EasyShare</h1>
-    </header>
-    <main>
-        <div class="container" id="login_container">
-            <form id="login_form">
-                <label for="login_input_uname">Username</label>
-                <input id="login_input_uname" type="text" name="uname">
-                <label for="login_input_psw">Password</label>
-                <input id="login_input_psw" type="password" name="psw">
-                <label for="login_button_submit">Login</label>
-                <input id="login_button_submit" type="submit">
-            </form>
-        </div>
-        <div id="content"></div>
-    </main>
-    <footer>
+  <!-- Auth Screen -->
+  <div id="authScreen">
+    <div class="auth-box">
+      <h2 id="authTitle">Login</h2>
+      <input type="text" id="username" placeholder="Benutzername" autocomplete="username">
+      <input type="password" id="password" placeholder="Passwort (min. 8 Zeichen)" autocomplete="current-password">
+      <button id="authBtn">Anmelden</button>
+      <div class="error" id="authError"></div>
+      <div class="auth-toggle" id="authToggle">Noch kein Konto? Registrieren</div>
+    </div>
+  </div>
 
-    </footer>
-    <script src="script.js"></script>
+  <!-- Storage App -->
+  <div id="storageApp" class="hidden">
+    <div class="container">
+      <div class="storage-app">
+        <div class="header">
+          <h1><i class="fa-solid fa-cloud"></i> Barwinski Cloud</h1>
+          <div class="user-info">
+            <div class="storage-info"><i class="fa-solid fa-database"></i> <span id="storageUsed">0 GB</span> verwendet</div>
+            <span id="currentUser"></span>
+            <button class="btn-logout" onclick="logout()">Abmelden</button>
+          </div>
+        </div>
+
+        <div class="upload-area" id="uploadArea">
+          <div style="font-size: 48px; margin-bottom: 10px;"><i class="fa-solid fa-upload"></i></div>
+          <h3>Datei hochladen</h3>
+          <p style="color: #999; margin-top: 10px;">Klicken oder Datei hierher ziehen</p>
+          <input type="file" id="fileInput" style="display: none;">
+        </div>
+
+        <div class="files-grid" id="filesGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Share Modal -->
+  <div id="shareModal" class="modal">
+    <div class="modal-content">
+      <h3><i class="fa-solid fa-share-from-square"></i> Datei teilen</h3>
+      <p>Teile diese Datei mit einem öffentlichen Link:</p>
+      <div class="share-link" id="shareLink"></div>
+      <div class="modal-actions">
+        <button class="btn-copy" onclick="copyShareLink()">Link kopieren</button>
+        <button class="btn-close" onclick="closeShareModal()">Schließen</button>
+      </div>
+    </div>
+  </div>
+  <script src="https://kit.fontawesome.com/a395a89f61.js" crossorigin="anonymous"></script>
+  <script>
+    let token = localStorage.getItem('token');
+    let isLoginMode = true;
+    let currentShareLink = '';
+
+    // Init
+    if (token) {
+      showApp();
+    }
+
+    // Auth Toggle
+    document.getElementById('authToggle').addEventListener('click', () => {
+      isLoginMode = !isLoginMode;
+      document.getElementById('authTitle').textContent = isLoginMode ? 'Login' : 'Registrierung';
+      document.getElementById('authBtn').textContent = isLoginMode ? 'Anmelden' : 'Registrieren';
+      document.getElementById('authToggle').textContent = isLoginMode 
+        ? 'Noch kein Konto? Registrieren' 
+        : 'Bereits registriert? Anmelden';
+      document.getElementById('authError').textContent = '';
+    });
+
+    // Auth Submit
+    document.getElementById('authBtn').addEventListener('click', async () => {
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const endpoint = isLoginMode ? '/api/login' : '/api/register';
+
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          if (isLoginMode) {
+            token = data.token;
+            localStorage.setItem('token', token);
+            localStorage.setItem('username', data.username);
+            showApp();
+          } else {
+            document.getElementById('authError').textContent = 'Registrierung erfolgreich! Bitte anmelden.';
+            document.getElementById('authError').style.color = '#2ecc71';
+            setTimeout(() => {
+              isLoginMode = true;
+              document.getElementById('authToggle').click();
+            }, 1500);
+          }
+        } else {
+          document.getElementById('authError').textContent = data.error;
+        }
+      } catch (error) {
+        document.getElementById('authError').textContent = 'Verbindungsfehler';
+      }
+    });
+
+    // Upload Area
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+
+    uploadArea.addEventListener('click', () => fileInput.click());
+
+    uploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadArea.classList.add('dragover');
+    });
+
+    uploadArea.addEventListener('dragleave', () => {
+      uploadArea.classList.remove('dragover');
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file) uploadFile(file);
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) uploadFile(file);
+    });
+
+    // Upload Function
+    async function uploadFile(file) {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData
+        });
+
+        if (res.ok) {
+          loadFiles();
+          loadStorage();
+        } else {
+          alert('Upload fehlgeschlagen');
+        }
+      } catch (error) {
+        alert('Upload-Fehler');
+      }
+      fileInput.value = '';
+    }
+
+    // Load Files
+    async function loadFiles() {
+      const res = await fetch('/api/files', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      const data = await res.json();
+      const grid = document.getElementById('filesGrid');
+      grid.innerHTML = '';
+
+      data.files.forEach(file => {
+        const card = document.createElement('div');
+        card.className = 'file-card';
+        card.innerHTML = `
+          ${file.is_shared ? '<div class="share-badge">Geteilt</div>' : ''}
+          <div class="file-icon">${getFileIcon(file.mime_type)}</div>
+          <div class="file-name">${file.original_name}</div>
+          <div class="file-size">${formatBytes(file.file_size)}</div>
+          <div class="file-actions">
+            <button class="btn btn-download" onclick="downloadFile(${file.id}, '${file.original_name}')"><i class="fa-solid fa-download"></i></button>
+            <button class="btn btn-share" onclick="shareFile(${file.id})" title="${file.is_shared ? 'Teilen beenden' : 'Teilen'}">${file.is_shared ? '<i class="fa-solid fa-handshake-slash"></i>' : '<i class="fa-solid fa-handshake-angle"></i>'}</button>
+            <button class="btn btn-delete" onclick="deleteFile(${file.id})"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    // Load Storage
+    async function loadStorage() {
+      const res = await fetch('/api/storage', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      document.getElementById('storageUsed').textContent = `${data.usedGB} GB`;
+    }
+
+    // Download
+    async function downloadFile(fileId, filename) {
+      window.location.href = `/api/download/${fileId}`;
+    }
+
+    // Share
+    async function shareFile(fileId) {
+      // Prüfe ob bereits geteilt
+      const checkRes = await fetch('/api/files', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const checkData = await checkRes.json();
+      const file = checkData.files.find(f => f.id === fileId);
+
+      if (file && file.is_shared) {
+        // Wenn bereits geteilt, zeige Option zum Entfernen
+        if (confirm('Diese Datei ist bereits geteilt. Möchtest du das Teilen beenden?')) {
+          await unshareFile(fileId);
+        }
+        return;
+      }
+
+      const res = await fetch(`/api/share/${fileId}`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      const data = await res.json();
+      currentShareLink = window.location.origin + data.shareUrl;
+      document.getElementById('shareLink').textContent = currentShareLink;
+      document.getElementById('shareModal').classList.add('active');
+      loadFiles();
+    }
+
+    // Unshare
+    async function unshareFile(fileId) {
+      const res = await fetch(`/api/share/${fileId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (res.ok) {
+        alert('Teilen erfolgreich beendet!');
+        loadFiles();
+      }
+    }
+
+    // Delete
+    async function deleteFile(fileId) {
+      if (!confirm('Datei wirklich löschen?')) return;
+
+      await fetch(`/api/files/${fileId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      loadFiles();
+      loadStorage();
+    }
+
+    // Copy Share Link
+    function copyShareLink() {
+      navigator.clipboard.writeText(currentShareLink);
+      alert('Link kopiert!');
+    }
+
+    // Close Modal
+    function closeShareModal() {
+      document.getElementById('shareModal').classList.remove('active');
+    }
+
+    // Logout
+    function logout() {
+      localStorage.removeItem('token');
+      localStorage.removeItem('username');
+      token = null;
+      document.getElementById('authScreen').classList.remove('hidden');
+      document.getElementById('storageApp').classList.add('hidden');
+    }
+
+    // Show App
+    function showApp() {
+      document.getElementById('authScreen').classList.add('hidden');
+      document.getElementById('storageApp').classList.remove('hidden');
+      document.getElementById('currentUser').innerHTML = '<i class="fa-solid fa-user"></i> ' + localStorage.getItem('username');
+      loadFiles();
+      loadStorage();
+    }
+
+    // Helpers
+    function getFileIcon(mimeType) {
+    if (!mimeType) return '<i class="fa-solid fa-file-circle-question"></i>';
+    if (mimeType.startsWith('image/')) return '<i class="fa-solid fa-image"></i>';
+    if (mimeType.startsWith('video/')) return '<i class="fa-solid fa-clapperboard"></i>';
+    if (mimeType.startsWith('audio/')) return '<i class="fa-solid fa-music"></i>';
+    if (mimeType.includes('pdf')) return '<i class="fa-solid fa-file-pdf"></i>';
+    if (mimeType.includes('zip') || mimeType.includes('rar') || mimeType.includes('7z')) return '<i class="fa-solid fa-file-zipper"></i>';
+    if (mimeType.includes('text')) return '<i class="fa-solid fa-file-lines"></i>';
+    if (mimeType.includes('word') || mimeType.includes('doc')) return '<i class="fa-solid fa-file-word"></i>';
+    if (mimeType.includes('excel') || mimeType.includes('sheet')) return '<i class="fa-solid fa-file-excel"></i>';
+    if (mimeType.includes('powerpoint') || mimeType.includes('ppt')) return '<i class="fa-solid fa-file-powerpoint"></i>';
+    if (mimeType.includes('csv')) return '<i class="fa-solid fa-file-csv"></i>';
+    if (mimeType.includes('code') || mimeType.includes('javascript') || mimeType.includes('json') || mimeType.includes('xml')) return '<i class="fa-solid fa-file-code"></i>';
+    if (mimeType.includes('html')) return '<i class="fa-solid fa-file-code"></i>';
+    if (mimeType.includes('css')) return '<i class="fa-solid fa-file-code"></i>';
+    if (mimeType.includes('font') || mimeType.includes('woff') || mimeType.includes('ttf')) return '<i class="fa-solid fa-font"></i>';
+    if (mimeType.includes('csv') || mimeType.includes('tsv')) return '<i class="fa-solid fa-file-csv"></i>';
+    return '<i class="fa-solid fa-file"></i>';
+}
+
+
+    function formatBytes(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    }
+  </script>
 </body>
 </html>
