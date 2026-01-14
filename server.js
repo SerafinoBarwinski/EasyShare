@@ -9,7 +9,7 @@ const fs = require('fs').promises;
 const crypto = require('crypto');
 
 const app = express();
-const PORT = 3000;
+const PORT = 8090;
 const JWT_SECRET = crypto.randomBytes(64).toString('hex'); // In Produktion in .env auslagern!
 const UPLOAD_DIR = path.join(__dirname, 'uploads');
 
