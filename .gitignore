@@ -138,3 +138,5 @@ vite.config.ts.timestamp-*
 *.env
 uploads/*
 storage.db
+*.zip
+*.tar
